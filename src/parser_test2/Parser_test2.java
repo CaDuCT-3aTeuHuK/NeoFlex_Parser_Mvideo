@@ -4,7 +4,11 @@ package parser_test2;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Scanner;
+import java.util.TreeMap;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -57,12 +61,43 @@ public class Parser_test2 {
                     Elements ProdName = Document.select("a[class=sel-product-tile-title]");
 
                     Elements classCost = Document.select("div[class=c-pdp-price]");
-                                     
+                    
+                    TreeMap <String, Integer> map;
+                    map = new TreeMap<String, Integer>();
+                                        
+                    
+                    for (int i=0; i<ProdName.size(); i++)
+                    {       
+                       String Name = ProdName.get(i).select("a[title]").text();
+                       System.out.println(Name);
+                       
+                       String CostStr = classCost.get(i).select("div[class=c-pdp-price__current]").text();
+                       System.out.println(CostStr);
+                       
+                       String costOnly= CostStr.replaceAll("[^0-9]", "");
+                       int a;
+                       if ("".equals(costOnly))                     //перевод пустых строк в формат Integer (если в дальнейшем в БД заливать, то может пригодиться)
+                       {
+                           a=0;
+                       }
+                       else
+                       {
+                           a = Integer.parseInt(costOnly);             
+                       }
+                       
+                       System.out.println(Integer.toString(a));
+                       map.put(Name, a);
+              //         System.out.println(map.toString());       
+                    }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////        
+ /*                           
                     for (Element PName : ProdName)
                     {
                        String Name = PName.select("a[title]").text();
                        System.out.println(Name);
+
                     }
+                    
                     
                                         
                     for (Element Cost : classCost)
@@ -81,14 +116,28 @@ public class Parser_test2 {
                            a = Integer.parseInt(costOnly);             
                        }
                        System.out.println(Integer.toString(a));
-                    }
-
+                    }*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }       
             
             
   
     
     public static void main(String[] args) throws IOException {
+        
+        
+   /*      String connectionUrl =
+                "jdbc:sqlserver://localhost:1433;"
+                        + "databaseName=Test;"
+              //          + "user=yourusername@yourserver;" ///DESKTOP-IDFKT3E
+                        +"IntegratedSecurity=true;";
+        try {
+            //Class.forName("com.microsoft.sqlserver.jdbc.sqlserverdriver");
+            Connection connection = DriverManager.getConnection(connectionUrl);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        } */
                
    /*     Document docTest;
 
@@ -126,10 +175,11 @@ public class Parser_test2 {
                 
     }
     
-    }
+    
 
 
+  
     
     
-    
+}
 }
