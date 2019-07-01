@@ -6,7 +6,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.TreeMap;
 import org.jsoup.Jsoup;
@@ -54,8 +57,48 @@ public class Parser_test2 {
 
             
  
-         private static void getNameAndCost(String page) throws IOException {   // Вывод названия и стоимости товара
-                    
+         private static void getNameAndCost(String page) throws IOException, SQLException {   // Вывод названия и стоимости товара
+            //////////////////       
+     Date date = new Date();  
+     System.out.println(date.toString()); 
+     
+      
+     
+     String DB_URL = "jdbc:postgresql://127.0.0.1:5432/test";
+     String USER = "postgres";
+     String PASS = "postgres"; 
+     System.out.println("Testing connection to PostgreSQL JDBC");
+ 
+	try {
+		Class.forName("org.postgresql.Driver");
+	} catch (ClassNotFoundException e) {
+		System.out.println("PostgreSQL JDBC Driver is not found. Include it in your library path ");
+		e.printStackTrace();
+		return;
+	}
+ 
+	System.out.println("PostgreSQL JDBC Driver successfully connected");
+	Connection connection = null;
+ 
+	try {
+		connection = DriverManager
+		.getConnection(DB_URL, USER, PASS);
+ 
+	} catch (SQLException e) {
+		System.out.println("Connection Failed");
+		e.printStackTrace();
+		return;
+	}
+ 
+	if (connection != null) {
+		System.out.println("You successfully connected to database now");
+	} else {
+		System.out.println("Failed to make connection to database");
+	} 
+        Statement stmt = connection.createStatement();
+        
+        
+             /////////////////
                     Document Document;
                     Document = Jsoup.connect("https://www.mvideo.ru/noutbuki-planshety-komputery/noutbuki-118/f/"+page).get();
                     Elements ProdName = Document.select("a[class=sel-product-tile-title]");
@@ -70,6 +113,7 @@ public class Parser_test2 {
                     {       
                        String Name = ProdName.get(i).select("a[title]").text();
                        System.out.println(Name);
+                       
                        
                        String CostStr = classCost.get(i).select("div[class=c-pdp-price__current]").text();
                        System.out.println(CostStr);
@@ -87,6 +131,10 @@ public class Parser_test2 {
                        
                        System.out.println(Integer.toString(a));
                        map.put(Name, a);
+                       
+                      stmt.executeUpdate("INSERT INTO DATE (DATE_TIME, Name, PRICE) VALUES ('"+(date.getYear()+1900)+"-"+(date.getMonth()+1)+"-"+date.getDay()+"','" + Name + "'," +a+  ");");
+                       
+                       
               //         System.out.println(map.toString());       
                     }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////        
@@ -118,27 +166,62 @@ public class Parser_test2 {
                        System.out.println(Integer.toString(a));
                     }*/
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    }       
-            
+    } 
+         
+            private static void getDataBaseInfo() throws IOException, SQLException {   // Определение номера последней страницы  
+               
+        
+           Date date = new Date();  
+     System.out.println(date.toString());   
+        
+     String DB_URL = "jdbc:postgresql://127.0.0.1:5432/test";
+     String USER = "postgres";
+     String PASS = "postgres"; 
+     System.out.println("Testing connection to PostgreSQL JDBC");
+ 
+	try {
+		Class.forName("org.postgresql.Driver");
+	} catch (ClassNotFoundException e) {
+		System.out.println("PostgreSQL JDBC Driver is not found. Include it in your library path ");
+		e.printStackTrace();
+		return;
+	}
+ 
+	System.out.println("PostgreSQL JDBC Driver successfully connected");
+	Connection connection = null;
+ 
+	try {
+		connection = DriverManager
+		.getConnection(DB_URL, USER, PASS);
+ 
+	} catch (SQLException e) {
+		System.out.println("Connection Failed");
+		e.printStackTrace();
+		return;
+	}
+ 
+	if (connection != null) {
+		System.out.println("You successfully connected to database now");
+	} else {
+		System.out.println("Failed to make connection to database");
+	}  
+        
+              Statement stmt = connection.createStatement();
+     //   stmt.executeUpdate("INSERT INTO Products (Name) VALUES ('azaza');");
+        ResultSet rs = stmt.executeQuery("SELECT * FROM DATE");
+
+            while (rs.next()){
+            System.out.println(rs.getString("date_time") + " "+rs.getString("name")+" "+rs.getString("price"));
+            };
+        
+    }             
             
   
     
-    public static void main(String[] args) throws IOException {
-        
-        
-   /*      String connectionUrl =
-                "jdbc:sqlserver://localhost:1433;"
-                        + "databaseName=Test;"
-              //          + "user=yourusername@yourserver;" ///DESKTOP-IDFKT3E
-                        +"IntegratedSecurity=true;";
-        try {
-            //Class.forName("com.microsoft.sqlserver.jdbc.sqlserverdriver");
-            Connection connection = DriverManager.getConnection(connectionUrl);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        } */
-               
+    public static void main(String[] args) throws IOException, SQLException {
+ 
+ 
+ 
    /*     Document docTest;
 
         docTest = Jsoup.connect("https://www.mvideo.ru/").get();
@@ -165,6 +248,11 @@ public class Parser_test2 {
         
     /*    System.out.println(getСost2());
         System.out.println(getProdName2());*/
+    
+    
+    
+    
+    
     String page = "page=";
 
     int LastPage = getNumLastPage();
@@ -172,14 +260,10 @@ public class Parser_test2 {
     {       
             System.out.println("Страница: "+Integer.toString(i+1));  
             getNameAndCost(page+Integer.toString(i+1));
-                
+            
     }
     
-    
-
-
-  
-    
+getDataBaseInfo();
     
 }
 }
